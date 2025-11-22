@@ -12,13 +12,18 @@ import { apiService } from '@/src/services/api';
 import { ExpenseStats, MonthlyBreakdown } from '@/src/types';
 import { formatCurrency, getMonthName } from '@/src/utils/helpers';
 import { ThemedView } from '@/components/themed-view';
+import { useAppTheme } from '@/hooks/use-app-theme';
+import { Header } from '@/components/header';
 
 export default function StatisticsScreen() {
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const theme = useAppTheme();
   const [stats, setStats] = useState<ExpenseStats | null>(null);
   const [monthly, setMonthly] = useState<MonthlyBreakdown[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  const dynamicStyles = getStyles(theme);
 
   if (!authLoading && !isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
@@ -50,43 +55,42 @@ export default function StatisticsScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={dynamicStyles.container}>
+      <Header title="Spendly" subtitle="Statistics" />
       <ScrollView
-        style={styles.scrollView}
+        style={dynamicStyles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Statistics</Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Total Expenses</Text>
-          <Text style={styles.totalAmount}>
-            {stats ? formatCurrency(stats.total) : '₹0.00'}
-          </Text>
+        <View style={dynamicStyles.header}>
+          <View style={dynamicStyles.card}>
+            <Text style={dynamicStyles.cardTitle}>Total Expenses</Text>
+            <Text style={dynamicStyles.totalAmount}>
+              {stats ? formatCurrency(stats.total) : '₹0.00'}
+            </Text>
+          </View>
         </View>
 
         {stats && stats.byCategory.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>By Category</Text>
+          <View style={dynamicStyles.section}>
+            <Text style={dynamicStyles.sectionTitle}>By Category</Text>
             {stats.byCategory.map((item, index) => (
-              <View key={index} style={styles.categoryItem}>
-                <View style={styles.categoryInfo}>
+              <View key={index} style={dynamicStyles.categoryItem}>
+                <View style={dynamicStyles.categoryInfo}>
                   <View
                     style={[
-                      styles.categoryColor,
-                      { backgroundColor: item.categoryColor || '#ccc' },
+                      dynamicStyles.categoryColor,
+                      { backgroundColor: item.categoryColor || theme.colors.textTertiary },
                     ]}
                   />
-                  <Text style={styles.categoryName}>
+                  <Text style={dynamicStyles.categoryName}>
                     {item.categoryName}
                   </Text>
                 </View>
-                <View style={styles.categoryAmount}>
-                  <Text style={styles.categoryValue}>
+                <View style={dynamicStyles.categoryAmount}>
+                  <Text style={dynamicStyles.categoryValue}>
                     {formatCurrency(item.total)}
                   </Text>
-                  <Text style={styles.categoryCount}>
+                  <Text style={dynamicStyles.categoryCount}>
                     {item.count} {item.count === 1 ? 'expense' : 'expenses'}
                   </Text>
                 </View>
@@ -96,16 +100,16 @@ export default function StatisticsScreen() {
         )}
 
         {stats && stats.byPaymentMethod.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>By Payment Method</Text>
+          <View style={dynamicStyles.section}>
+            <Text style={dynamicStyles.sectionTitle}>By Payment Method</Text>
             {stats.byPaymentMethod.map((item, index) => (
-              <View key={index} style={styles.paymentItem}>
-                <Text style={styles.paymentMethod}>{item.paymentMethod}</Text>
+              <View key={index} style={dynamicStyles.paymentItem}>
+                <Text style={dynamicStyles.paymentMethod}>{item.paymentMethod}</Text>
                 <View>
-                  <Text style={styles.paymentValue}>
+                  <Text style={dynamicStyles.paymentValue}>
                     {formatCurrency(item.total)}
                   </Text>
-                  <Text style={styles.paymentCount}>
+                  <Text style={dynamicStyles.paymentCount}>
                     {item.count} {item.count === 1 ? 'expense' : 'expenses'}
                   </Text>
                 </View>
@@ -115,18 +119,18 @@ export default function StatisticsScreen() {
         )}
 
         {monthly.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Monthly Breakdown</Text>
+          <View style={dynamicStyles.section}>
+            <Text style={dynamicStyles.sectionTitle}>Monthly Breakdown</Text>
             {monthly.map((item) => (
-              <View key={item.month} style={styles.monthlyItem}>
-                <Text style={styles.monthName}>
+              <View key={item.month} style={dynamicStyles.monthlyItem}>
+                <Text style={dynamicStyles.monthName}>
                   {getMonthName(item.month)}
                 </Text>
                 <View>
-                  <Text style={styles.monthlyValue}>
+                  <Text style={dynamicStyles.monthlyValue}>
                     {formatCurrency(item.total)}
                   </Text>
-                  <Text style={styles.monthlyCount}>
+                  <Text style={dynamicStyles.monthlyCount}>
                     {item.count} {item.count === 1 ? 'expense' : 'expenses'}
                   </Text>
                 </View>
@@ -139,7 +143,7 @@ export default function StatisticsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -148,15 +152,9 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    paddingTop: 60,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
   },
   card: {
-    backgroundColor: '#6366f1',
+    backgroundColor: theme.colors.primary,
     marginHorizontal: 20,
     marginBottom: 20,
     padding: 20,
@@ -180,22 +178,20 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: theme.colors.text,
     marginBottom: 16,
   },
   categoryItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.styles.shadow,
   },
   categoryInfo: {
     flexDirection: 'row',
@@ -211,7 +207,7 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: theme.colors.text,
   },
   categoryAmount: {
     alignItems: 'flex-end',
@@ -219,69 +215,65 @@ const styles = StyleSheet.create({
   categoryValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#ef4444',
+    color: theme.colors.error,
   },
   categoryCount: {
     fontSize: 12,
-    color: '#666',
+    color: theme.colors.textSecondary,
     marginTop: 4,
   },
   paymentItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.styles.shadow,
   },
   paymentMethod: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: theme.colors.text,
   },
   paymentValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#ef4444',
+    color: theme.colors.error,
   },
   paymentCount: {
     fontSize: 12,
-    color: '#666',
+    color: theme.colors.textSecondary,
     marginTop: 4,
   },
   monthlyItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.styles.shadow,
   },
   monthName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: theme.colors.text,
   },
   monthlyValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#ef4444',
+    color: theme.colors.error,
   },
   monthlyCount: {
     fontSize: 12,
-    color: '#666',
+    color: theme.colors.textSecondary,
     marginTop: 4,
   },
 });

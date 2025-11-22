@@ -15,6 +15,7 @@ import { formatCurrency, formatDate, getDateRange } from '@/src/utils/helpers';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { useAppTheme } from '@/hooks/use-app-theme';
+import { Header } from '@/components/header';
 
 export default function HomeScreen() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -70,14 +71,11 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={dynamicStyles.container}>
+      <Header subtitle={`Welcome back, ${userName}`} />
       <ScrollView
         style={dynamicStyles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <View style={dynamicStyles.header}>
-          <Text style={dynamicStyles.welcomeText}>Welcome back,</Text>
-          <Text style={dynamicStyles.userName}>{userName}</Text>
-        </View>
 
         <View style={dynamicStyles.accountsSection}>
           <View style={dynamicStyles.sectionHeader}>
@@ -106,13 +104,13 @@ export default function HomeScreen() {
                 <View style={dynamicStyles.accountDetails}>
                   <View style={dynamicStyles.accountDetailItem}>
                     <Text style={dynamicStyles.accountDetailLabel}>Income</Text>
-                    <Text style={[dynamicStyles.accountDetailValue, { color: '#10b981' }]}>
+                    <Text style={[dynamicStyles.accountDetailValue, { color: theme.colors.success }]}>
                       {formatCurrency(balance.totalCredit)}
                     </Text>
                   </View>
                   <View style={dynamicStyles.accountDetailItem}>
                     <Text style={dynamicStyles.accountDetailLabel}>Expenses</Text>
-                    <Text style={[dynamicStyles.accountDetailValue, { color: '#ef4444' }]}>
+                    <Text style={[dynamicStyles.accountDetailValue, { color: theme.colors.error }]}>
                       {formatCurrency(balance.totalDebit)}
                     </Text>
                   </View>
@@ -143,12 +141,12 @@ export default function HomeScreen() {
           ) : (
             recentTransactions.map((transaction) => {
               const isCredit = transaction.transactionType === TransactionType.CREDIT;
-              const amountColor = isCredit ? '#10b981' : '#ef4444';
+              const amountColor = isCredit ? theme.colors.success : theme.colors.error;
               return (
                 <TouchableOpacity
                   key={transaction.id}
                   style={dynamicStyles.transactionItem}
-                  onPress={() => router.push(`/add-transaction?id=${transaction.id}`)}
+                  onPress={() => router.push(`/transaction-detail?id=${transaction.id}`)}
                 >
                   <View style={dynamicStyles.transactionItemLeft}>
                     {transaction.category && (
@@ -176,7 +174,7 @@ export default function HomeScreen() {
 
       <View style={dynamicStyles.fabContainer}>
         <TouchableOpacity
-          style={[dynamicStyles.fab, { backgroundColor: '#10b981', marginRight: 8 }]}
+          style={[dynamicStyles.fab, { backgroundColor: theme.colors.success, marginRight: 8 }]}
           onPress={() => router.push('/add-transaction?type=debit')}
         >
           <Text style={dynamicStyles.fabText}>+</Text>
@@ -192,20 +190,6 @@ const getStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-  },
-  welcomeText: {
-    fontSize: 16,
-    color: theme.colors.textSecondary,
-  },
-  userName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-    marginTop: 4,
   },
   accountsSection: {
     marginHorizontal: 20,

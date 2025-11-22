@@ -87,32 +87,21 @@ export class AuthService {
     return this.generateTokens(user.id, user.username || user.email, user.email);
   }
 
-  async logout(userPayload: any, refreshToken: string) {
-    if (!userPayload?.sub && !userPayload?.id) {
-      throw new UnauthorizedException();
-    }
-
+  async logout(refreshToken: string) {
     const jwtConfig = this.getJwtConfig();
     try {
-      const payload = await this.jwtService.verifyAsync(refreshToken, {
+      // Validate the refresh token
+      await this.jwtService.verifyAsync(refreshToken, {
         secret: jwtConfig.refreshSecret,
       });
-      const tokenUserId = this.normalizeUserId(payload.sub);
-      const requestUserId = this.normalizeUserId(
-        userPayload.id ?? userPayload.sub ?? userPayload.userId,
-      );
-      if (
-        tokenUserId === null ||
-        requestUserId === null ||
-        tokenUserId !== requestUserId
-      ) {
-        throw new ForbiddenException('Token does not belong to this user');
-      }
+      // If token is valid, logout is successful
+      // In a production app, you might want to blacklist the token here
+      return { message: 'Logged out successfully' };
     } catch {
-      throw new UnauthorizedException('Invalid refresh token');
+      // Even if token is invalid/expired, we still return success
+      // This allows clients to clear local storage even with expired tokens
+      return { message: 'Logged out successfully' };
     }
-
-    return { message: 'Logged out successfully' };
   }
 
   async me(userPayload: any) {

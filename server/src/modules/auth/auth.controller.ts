@@ -31,12 +31,10 @@ export class AuthController {
     return this.authService.refresh(refreshTokenDto.refreshToken);
   }
 
+  @Public()
   @Post('logout')
-  logout(
-    @Req() request: AuthenticatedRequest,
-    @Body() refreshTokenDto: RefreshTokenDto,
-  ) {
-    return this.authService.logout(request.user, refreshTokenDto.refreshToken);
+  logout(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.logout(refreshTokenDto.refreshToken);
   }
 
   @Get('me')

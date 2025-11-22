@@ -16,6 +16,8 @@ import { Category, PaymentMethod, CreateTransactionDto, TransactionType, Account
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { z } from 'zod';
+import { useAppTheme } from '@/hooks/use-app-theme';
+import { ThemedView } from '@/components/themed-view';
 
 // Zod validation schema
 const transactionSchema = z.object({
@@ -33,6 +35,7 @@ export default function AddTransactionScreen() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
   const { id, type } = useLocalSearchParams<{ id?: string; type?: string }>();
+  const theme = useAppTheme();
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -52,6 +55,8 @@ export default function AddTransactionScreen() {
   if (!authLoading && !isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
   }
+
+  const dynamicStyles = getStyles(theme);
 
   useEffect(() => {
     loadCategories();
@@ -139,51 +144,51 @@ export default function AddTransactionScreen() {
   };
 
   const isCredit = formData.transactionType === TransactionType.CREDIT;
-  const primaryColor = isCredit ? '#10b981' : '#ef4444';
+  const primaryColor = isCredit ? theme.colors.success : theme.colors.error;
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Transaction Type *</Text>
-            <View style={styles.typeContainer}>
+    <ThemedView style={dynamicStyles.container}>
+      <ScrollView style={dynamicStyles.scrollView}>
+        <View style={dynamicStyles.form}>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Transaction Type *</Text>
+            <View style={dynamicStyles.typeContainer}>
               <TouchableOpacity
                 style={[
-                  styles.typeButton,
-                  !isCredit && styles.typeButtonActive,
-                  !isCredit && { backgroundColor: '#ef4444' },
+                  dynamicStyles.typeButton,
+                  !isCredit && dynamicStyles.typeButtonActive,
+                  !isCredit && { backgroundColor: theme.colors.error },
                 ]}
                 onPress={() => setFormData({ ...formData, transactionType: TransactionType.DEBIT })}
               >
-                <Text style={[styles.typeButtonText, !isCredit && styles.typeButtonTextActive]}>
+                <Text style={[dynamicStyles.typeButtonText, !isCredit && dynamicStyles.typeButtonTextActive]}>
                   Expense (Debit)
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
-                  styles.typeButton,
-                  isCredit && styles.typeButtonActive,
-                  isCredit && { backgroundColor: '#10b981' },
+                  dynamicStyles.typeButton,
+                  isCredit && dynamicStyles.typeButtonActive,
+                  isCredit && { backgroundColor: theme.colors.success },
                 ]}
                 onPress={() => setFormData({ ...formData, transactionType: TransactionType.CREDIT })}
               >
-                <Text style={[styles.typeButtonText, isCredit && styles.typeButtonTextActive]}>
+                <Text style={[dynamicStyles.typeButtonText, isCredit && dynamicStyles.typeButtonTextActive]}>
                   Income (Credit)
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Account *</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.accountScroll}>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Account *</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dynamicStyles.accountScroll}>
               {accounts.map((account) => (
                 <TouchableOpacity
                   key={account.id}
                   style={[
-                    styles.accountChip,
-                    formData.accountId === account.id && styles.accountChipActive,
+                    dynamicStyles.accountChip,
+                    formData.accountId === account.id && dynamicStyles.accountChipActive,
                     formData.accountId === account.id && { backgroundColor: primaryColor },
                   ]}
                   onPress={() => {
@@ -193,8 +198,8 @@ export default function AddTransactionScreen() {
                 >
                   <Text
                     style={[
-                      styles.accountChipText,
-                      formData.accountId === account.id && styles.accountChipTextActive,
+                      dynamicStyles.accountChipText,
+                      formData.accountId === account.id && dynamicStyles.accountChipTextActive,
                     ]}
                   >
                     {account.name}
@@ -202,14 +207,15 @@ export default function AddTransactionScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            {errors.accountId && <Text style={styles.errorText}>{errors.accountId}</Text>}
+            {errors.accountId && <Text style={dynamicStyles.errorText}>{errors.accountId}</Text>}
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Amount *</Text>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Amount *</Text>
             <TextInput
-              style={[styles.input, errors.amount && styles.inputError]}
+              style={[dynamicStyles.input, errors.amount && dynamicStyles.inputError]}
               placeholder="0.00"
+              placeholderTextColor={theme.colors.textTertiary}
               value={formData.amount > 0 ? formData.amount.toString() : ''}
               onChangeText={(text) => {
                 const amount = parseFloat(text) || 0;
@@ -220,14 +226,15 @@ export default function AddTransactionScreen() {
               }}
               keyboardType="decimal-pad"
             />
-            {errors.amount && <Text style={styles.errorText}>{errors.amount}</Text>}
+            {errors.amount && <Text style={dynamicStyles.errorText}>{errors.amount}</Text>}
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Description *</Text>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Description *</Text>
             <TextInput
-              style={[styles.input, errors.description && styles.inputError]}
+              style={[dynamicStyles.input, errors.description && dynamicStyles.inputError]}
               placeholder={isCredit ? "What is the source of income?" : "What did you spend on?"}
+              placeholderTextColor={theme.colors.textTertiary}
               value={formData.description}
               onChangeText={(text) => {
                 setFormData({ ...formData, description: text });
@@ -236,16 +243,16 @@ export default function AddTransactionScreen() {
                 }
               }}
             />
-            {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
+            {errors.description && <Text style={dynamicStyles.errorText}>{errors.description}</Text>}
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Date *</Text>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Date *</Text>
             <TouchableOpacity
-              style={styles.dateButton}
+              style={dynamicStyles.dateButton}
               onPress={() => setShowDatePicker(true)}
             >
-              <Text style={styles.dateButtonText}>
+              <Text style={dynamicStyles.dateButtonText}>
                 {format(new Date(formData.date), 'MMM dd, yyyy')}
               </Text>
             </TouchableOpacity>
@@ -277,18 +284,18 @@ export default function AddTransactionScreen() {
                 }}
               />
             )}
-            {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
+            {errors.date && <Text style={dynamicStyles.errorText}>{errors.date}</Text>}
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Category</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Category</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dynamicStyles.categoryScroll}>
               {categories.map((category) => (
                 <TouchableOpacity
                   key={category.id}
                   style={[
-                    styles.categoryChip,
-                    formData.categoryId === category.id && styles.categoryChipActive,
+                    dynamicStyles.categoryChip,
+                    formData.categoryId === category.id && dynamicStyles.categoryChipActive,
                     { borderColor: category.color },
                   ]}
                   onPress={() =>
@@ -299,29 +306,29 @@ export default function AddTransactionScreen() {
                     })
                   }
                 >
-                  <Text style={styles.categoryChipText}>{category.name}</Text>
+                  <Text style={dynamicStyles.categoryChipText}>{category.name}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Payment Method</Text>
-            <View style={styles.paymentMethodContainer}>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Payment Method</Text>
+            <View style={dynamicStyles.paymentMethodContainer}>
               {Object.values(PaymentMethod).map((method) => (
                 <TouchableOpacity
                   key={method}
                   style={[
-                    styles.paymentMethodButton,
-                    formData.paymentMethod === method && styles.paymentMethodButtonActive,
+                    dynamicStyles.paymentMethodButton,
+                    formData.paymentMethod === method && dynamicStyles.paymentMethodButtonActive,
                     formData.paymentMethod === method && { backgroundColor: primaryColor },
                   ]}
                   onPress={() => setFormData({ ...formData, paymentMethod: method })}
                 >
                   <Text
                     style={[
-                      styles.paymentMethodText,
-                      formData.paymentMethod === method && styles.paymentMethodTextActive,
+                      dynamicStyles.paymentMethodText,
+                      formData.paymentMethod === method && dynamicStyles.paymentMethodTextActive,
                     ]}
                   >
                     {method}
@@ -331,11 +338,12 @@ export default function AddTransactionScreen() {
             </View>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Notes (Optional)</Text>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Notes (Optional)</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[dynamicStyles.input, dynamicStyles.textArea]}
               placeholder="Add any additional notes..."
+              placeholderTextColor={theme.colors.textTertiary}
               value={formData.notes}
               onChangeText={(text) => setFormData({ ...formData, notes: text })}
               multiline
@@ -345,25 +353,24 @@ export default function AddTransactionScreen() {
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={dynamicStyles.footer}>
         <TouchableOpacity
-          style={[styles.saveButton, { backgroundColor: primaryColor }, saving && styles.saveButtonDisabled]}
+          style={[dynamicStyles.saveButton, { backgroundColor: primaryColor }, saving && dynamicStyles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={saving}
         >
-          <Text style={styles.saveButtonText}>
+          <Text style={dynamicStyles.saveButtonText}>
             {saving ? 'Saving...' : id ? 'Update' : 'Save'}
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ThemedView>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   scrollView: {
     flex: 1,
@@ -377,7 +384,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: theme.colors.text,
     marginBottom: 8,
   },
   typeContainer: {
@@ -389,8 +396,8 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.cardBackground,
     alignItems: 'center',
   },
   typeButtonActive: {
@@ -398,7 +405,7 @@ const styles = StyleSheet.create({
   },
   typeButtonText: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.textSecondary,
     fontWeight: '600',
   },
   typeButtonTextActive: {
@@ -406,11 +413,12 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.inputBorder,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
   },
   textArea: {
     height: 100,
@@ -425,14 +433,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 2,
     marginRight: 8,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
   },
   categoryChipActive: {
-    backgroundColor: '#f0f0ff',
+    backgroundColor: theme.colors.secondaryBackground,
   },
   categoryChipText: {
     fontSize: 14,
-    color: '#1a1a1a',
+    color: theme.colors.text,
   },
   paymentMethodContainer: {
     flexDirection: 'row',
@@ -445,15 +453,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.cardBackground,
   },
   paymentMethodButtonActive: {
     borderColor: 'transparent',
   },
   paymentMethodText: {
     fontSize: 14,
-    color: '#1a1a1a',
+    color: theme.colors.text,
   },
   paymentMethodTextActive: {
     color: '#fff',
@@ -461,9 +469,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: theme.colors.border,
   },
   saveButton: {
     padding: 16,
@@ -486,16 +494,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.border,
     marginRight: 8,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
   },
   accountChipActive: {
     borderColor: 'transparent',
   },
   accountChipText: {
     fontSize: 14,
-    color: '#1a1a1a',
+    color: theme.colors.text,
     fontWeight: '500',
   },
   accountChipTextActive: {
@@ -504,22 +512,22 @@ const styles = StyleSheet.create({
   },
   dateButton: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.border,
     borderRadius: 8,
     padding: 12,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
   },
   dateButtonText: {
     fontSize: 16,
-    color: '#1a1a1a',
+    color: theme.colors.text,
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 12,
     marginTop: 4,
   },
   inputError: {
-    borderColor: '#ef4444',
+    borderColor: theme.colors.error,
   },
 });
 

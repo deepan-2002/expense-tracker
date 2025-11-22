@@ -16,6 +16,8 @@ import { useAuth } from '@/src/context/AuthContext';
 import { apiService } from '@/src/services/api';
 import { Category } from '@/src/types';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useAppTheme } from '@/hooks/use-app-theme';
+import { ThemedView } from '@/components/themed-view';
 
 const DEFAULT_CATEGORIES = [
   { name: 'Food', icon: '🍔', color: '#ef4444' },
@@ -71,12 +73,15 @@ const AVAILABLE_ICONS = [
 
 export default function CategoriesScreen() {
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const theme = useAppTheme();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', icon: '', color: '#6366f1' });
+  
+  const dynamicStyles = getStyles(theme);
 
   useEffect(() => {
     loadCategories();
@@ -163,41 +168,38 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ThemedView style={dynamicStyles.container}>
       <ScrollView
-        style={styles.scrollView}
+        style={dynamicStyles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Categories</Text>
-        </View>
 
         {categories.length === 0 && (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No categories yet</Text>
-            <Text style={styles.emptySubtext}>Create your first category or use quick add</Text>
+          <View style={dynamicStyles.emptyContainer}>
+            <Text style={dynamicStyles.emptyText}>No categories yet</Text>
+            <Text style={dynamicStyles.emptySubtext}>Create your first category or use quick add</Text>
           </View>
         )}
 
         {categories.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your Categories</Text>
+          <View style={dynamicStyles.section}>
+            <Text style={dynamicStyles.sectionTitle}>Your Categories</Text>
             {categories.map((category) => (
-              <View key={category.id} style={styles.categoryCard}>
-                <View style={styles.categoryInfo}>
+              <View key={category.id} style={dynamicStyles.categoryCard}>
+                <View style={dynamicStyles.categoryInfo}>
                   {category.icon && (
-                    <Text style={styles.categoryIcon}>{category.icon}</Text>
+                    <Text style={dynamicStyles.categoryIcon}>{category.icon}</Text>
                   )}
                   <View
-                    style={[styles.categoryColorDot, { backgroundColor: category.color }]}
+                    style={[dynamicStyles.categoryColorDot, { backgroundColor: category.color }]}
                   />
-                  <Text style={styles.categoryName}>{category.name}</Text>
+                  <Text style={dynamicStyles.categoryName}>{category.name}</Text>
                 </View>
                 <TouchableOpacity
                   onPress={() => handleDeleteCategory(category.id)}
-                  style={styles.deleteButton}
+                  style={dynamicStyles.deleteButton}
                 >
-                  <Text style={styles.deleteButtonText}>Delete</Text>
+                  <Text style={dynamicStyles.deleteButtonText}>Delete</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -205,17 +207,17 @@ export default function CategoriesScreen() {
         )}
 
         {!showModal && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quick Add</Text>
-            <View style={styles.quickAddGrid}>
+          <View style={dynamicStyles.section}>
+            <Text style={dynamicStyles.sectionTitle}>Quick Add</Text>
+            <View style={dynamicStyles.quickAddGrid}>
               {DEFAULT_CATEGORIES.map((cat) => (
                 <TouchableOpacity
                   key={cat.name}
-                  style={styles.quickAddCard}
+                  style={dynamicStyles.quickAddCard}
                   onPress={() => handleQuickCreate(cat)}
                 >
-                  <Text style={styles.quickAddIcon}>{cat.icon}</Text>
-                  <Text style={styles.quickAddName}>{cat.name}</Text>
+                  <Text style={dynamicStyles.quickAddIcon}>{cat.icon}</Text>
+                  <Text style={dynamicStyles.quickAddName}>{cat.name}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -225,10 +227,10 @@ export default function CategoriesScreen() {
 
       {!showModal && (
         <TouchableOpacity
-          style={styles.fab}
+          style={dynamicStyles.fab}
           onPress={() => setShowModal(true)}
         >
-          <Text style={styles.fabText}>+</Text>
+          <Text style={dynamicStyles.fabText}>+</Text>
         </TouchableOpacity>
       )}
 
@@ -242,63 +244,64 @@ export default function CategoriesScreen() {
           setNewCategory({ name: '', icon: '', color: '#6366f1' });
         }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Create Category</Text>
+        <View style={dynamicStyles.modalOverlay}>
+          <View style={dynamicStyles.modalContent}>
+            <View style={dynamicStyles.modalHeader}>
+              <Text style={dynamicStyles.modalTitle}>Create Category</Text>
               <TouchableOpacity
                 onPress={() => {
                   setShowModal(false);
                   setNewCategory({ name: '', icon: '', color: '#6366f1' });
                 }}
-                style={styles.closeButton}
+                style={dynamicStyles.closeButton}
               >
-                <MaterialIcons name="close" size={24} color="#666" />
+                <MaterialIcons name="close" size={24} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               placeholder="Category Name"
+              placeholderTextColor={theme.colors.textTertiary}
               value={newCategory.name}
               onChangeText={(text) => setNewCategory({ ...newCategory, name: text })}
             />
 
             <TouchableOpacity
-              style={styles.iconSelector}
+              style={dynamicStyles.iconSelector}
               onPress={() => setShowIconPicker(true)}
             >
-              <View style={styles.iconSelectorContent}>
+              <View style={dynamicStyles.iconSelectorContent}>
                 {newCategory.icon ? (
                   <>
-                    <Text style={styles.iconSelectorIcon}>{newCategory.icon}</Text>
-                    <Text style={styles.iconSelectorText}>
+                    <Text style={dynamicStyles.iconSelectorIcon}>{newCategory.icon}</Text>
+                    <Text style={dynamicStyles.iconSelectorText}>
                       {AVAILABLE_ICONS.find((i) => i.name === newCategory.icon)?.label ||
                         'Custom Icon'}
                     </Text>
                   </>
                 ) : (
-                  <Text style={styles.iconSelectorPlaceholder}>Select Icon</Text>
+                  <Text style={dynamicStyles.iconSelectorPlaceholder}>Select Icon</Text>
                 )}
-                <MaterialIcons name="arrow-drop-down" size={24} color="#666" />
+                <MaterialIcons name="arrow-drop-down" size={24} color={theme.colors.textSecondary} />
               </View>
             </TouchableOpacity>
 
-            <View style={styles.buttonRow}>
+            <View style={dynamicStyles.buttonRow}>
               <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
+                style={[dynamicStyles.button, dynamicStyles.cancelButton]}
                 onPress={() => {
                   setShowModal(false);
                   setNewCategory({ name: '', icon: '', color: '#6366f1' });
                 }}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={dynamicStyles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.button, styles.createButton]}
+                style={[dynamicStyles.button, dynamicStyles.createButton]}
                 onPress={handleCreateCategory}
               >
-                <Text style={styles.createButtonText}>Create</Text>
+                <Text style={dynamicStyles.createButtonText}>Create</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -312,15 +315,15 @@ export default function CategoriesScreen() {
         transparent={true}
         onRequestClose={() => setShowIconPicker(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.iconPickerModal}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Icon</Text>
+        <View style={dynamicStyles.modalOverlay}>
+          <View style={dynamicStyles.iconPickerModal}>
+            <View style={dynamicStyles.modalHeader}>
+              <Text style={dynamicStyles.modalTitle}>Select Icon</Text>
               <TouchableOpacity
                 onPress={() => setShowIconPicker(false)}
-                style={styles.closeButton}
+                style={dynamicStyles.closeButton}
               >
-                <MaterialIcons name="close" size={24} color="#666" />
+                <MaterialIcons name="close" size={24} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
             <FlatList
@@ -330,54 +333,44 @@ export default function CategoriesScreen() {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[
-                    styles.iconOption,
-                    newCategory.icon === item.name && styles.iconOptionSelected,
+                    dynamicStyles.iconOption,
+                    newCategory.icon === item.name && dynamicStyles.iconOptionSelected,
                   ]}
                   onPress={() => handleSelectIcon(item.name)}
                 >
                   <Text
                     style={[
-                      styles.iconOptionEmoji,
-                      newCategory.icon === item.name && styles.iconOptionEmojiSelected,
+                      dynamicStyles.iconOptionEmoji,
+                      newCategory.icon === item.name && dynamicStyles.iconOptionEmojiSelected,
                     ]}
                   >
                     {item.name}
                   </Text>
                   <Text
                     style={[
-                      styles.iconOptionLabel,
-                      newCategory.icon === item.name && styles.iconOptionLabelSelected,
+                      dynamicStyles.iconOptionLabel,
+                      newCategory.icon === item.name && dynamicStyles.iconOptionLabelSelected,
                     ]}
                   >
                     {item.label}
                   </Text>
                 </TouchableOpacity>
               )}
-              contentContainerStyle={styles.iconPickerList}
+              contentContainerStyle={dynamicStyles.iconPickerList}
             />
           </View>
         </View>
       </Modal>
-    </View>
+    </ThemedView>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
   },
   emptyContainer: {
     padding: 32,
@@ -386,12 +379,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: theme.colors.text,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
   section: {
     padding: 20,
@@ -400,22 +393,20 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: theme.colors.text,
     marginBottom: 16,
   },
   categoryCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.styles.shadow,
   },
   categoryInfo: {
     flexDirection: 'row',
@@ -435,16 +426,16 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: theme.colors.text,
   },
   deleteButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: '#fee2e2',
+    backgroundColor: theme.colors.secondaryBackground,
   },
   deleteButtonText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -455,15 +446,13 @@ const styles = StyleSheet.create({
   },
   quickAddCard: {
     width: '30%',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.styles.shadow,
   },
   quickAddIcon: {
     fontSize: 32,
@@ -471,16 +460,17 @@ const styles = StyleSheet.create({
   },
   quickAddName: {
     fontSize: 12,
-    color: '#1a1a1a',
+    color: theme.colors.text,
     fontWeight: '600',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.inputBorder,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
     marginBottom: 12,
   },
   buttonRow: {
@@ -494,15 +484,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: theme.colors.secondaryBackground,
   },
   cancelButtonText: {
-    color: '#1a1a1a',
+    color: theme.colors.text,
     fontSize: 16,
     fontWeight: '600',
   },
   createButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: theme.colors.primary,
   },
   createButtonText: {
     color: '#fff',
@@ -516,14 +506,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#6366f1',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
+    ...theme.styles.shadow,
   },
   fabText: {
     color: '#fff',
@@ -536,7 +522,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -544,7 +530,7 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
   },
   iconPickerModal: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -560,17 +546,17 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: theme.colors.text,
   },
   closeButton: {
     padding: 4,
   },
   iconSelector: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.inputBorder,
     borderRadius: 8,
     marginBottom: 12,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.inputBackground,
   },
   iconSelectorContent: {
     flexDirection: 'row',
@@ -580,13 +566,13 @@ const styles = StyleSheet.create({
   },
   iconSelectorText: {
     fontSize: 16,
-    color: '#1a1a1a',
+    color: theme.colors.text,
     flex: 1,
     marginLeft: 12,
   },
   iconSelectorPlaceholder: {
     fontSize: 16,
-    color: '#999',
+    color: theme.colors.textTertiary,
     flex: 1,
   },
   iconSelectorIcon: {
@@ -603,21 +589,21 @@ const styles = StyleSheet.create({
     margin: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-    backgroundColor: '#f9f9f9',
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.secondaryBackground,
   },
   iconOptionSelected: {
-    borderColor: '#6366f1',
-    backgroundColor: '#eef2ff',
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '20',
   },
   iconOptionLabel: {
     fontSize: 10,
-    color: '#666',
+    color: theme.colors.textSecondary,
     marginTop: 4,
     textAlign: 'center',
   },
   iconOptionLabelSelected: {
-    color: '#6366f1',
+    color: theme.colors.primary,
     fontWeight: '600',
   },
   iconOptionEmoji: {

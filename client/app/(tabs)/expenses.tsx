@@ -16,6 +16,7 @@ import { formatCurrency, formatDate, getDateRange } from '@/src/utils/helpers';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { useAppTheme } from '@/hooks/use-app-theme';
+import { Header } from '@/components/header';
 
 export default function ExpensesScreen() {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -82,12 +83,12 @@ export default function ExpensesScreen() {
 
   const renderTransaction = ({ item }: { item: Transaction }) => {
     const isCredit = item.transactionType === TransactionType.CREDIT;
-    const amountColor = isCredit ? '#10b981' : '#ef4444';
+    const amountColor = isCredit ? theme.colors.success : theme.colors.error;
     
     return (
       <TouchableOpacity
         style={dynamicStyles.transactionCard}
-        onPress={() => router.push(`/add-transaction?id=${item.id}`)}
+        onPress={() => router.push(`/transaction-detail?id=${item.id}`)}
       >
         <View style={dynamicStyles.transactionHeader}>
           <View style={dynamicStyles.transactionInfo}>
@@ -117,6 +118,7 @@ export default function ExpensesScreen() {
 
   return (
     <ThemedView style={dynamicStyles.container}>
+      <Header title="Spendly" subtitle="Transactions" />
       <View style={dynamicStyles.header}>
         <TextInput
           style={dynamicStyles.searchInput}
@@ -141,7 +143,7 @@ export default function ExpensesScreen() {
             style={[
               dynamicStyles.typeFilterButton,
               transactionTypeFilter === TransactionType.CREDIT && dynamicStyles.typeFilterButtonActive,
-              transactionTypeFilter === TransactionType.CREDIT && { backgroundColor: '#10b981' },
+              transactionTypeFilter === TransactionType.CREDIT && { backgroundColor: theme.colors.success },
             ]}
             onPress={() => setTransactionTypeFilter(TransactionType.CREDIT)}
           >
@@ -153,7 +155,7 @@ export default function ExpensesScreen() {
             style={[
               dynamicStyles.typeFilterButton,
               transactionTypeFilter === TransactionType.DEBIT && dynamicStyles.typeFilterButtonActive,
-              transactionTypeFilter === TransactionType.DEBIT && { backgroundColor: '#ef4444' },
+              transactionTypeFilter === TransactionType.DEBIT && { backgroundColor: theme.colors.error },
             ]}
             onPress={() => setTransactionTypeFilter(TransactionType.DEBIT)}
           >
@@ -212,7 +214,7 @@ export default function ExpensesScreen() {
 
       <View style={dynamicStyles.fabContainer}>
         <TouchableOpacity
-          style={[dynamicStyles.fab, { backgroundColor: '#10b981', marginRight: 8 }]}
+          style={[dynamicStyles.fab, { backgroundColor: theme.colors.success, marginRight: 8 }]}
           onPress={() => router.push('/add-transaction?type=debit')}
         >
           <Text style={dynamicStyles.fabText}>+</Text>
@@ -228,9 +230,8 @@ const getStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   },
   header: {
     padding: 16,
+    paddingTop: 0,
     backgroundColor: theme.colors.cardBackground,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   searchInput: {
     borderWidth: 1,

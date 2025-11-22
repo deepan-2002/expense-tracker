@@ -10,11 +10,17 @@ import {
 } from 'react-native';
 import { useRouter, Redirect } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
+import { useTheme, ThemeMode } from '@/src/context/ThemeContext';
 import { apiService } from '@/src/services/api';
 import { formatCurrency } from '@/src/utils/helpers';
+import { useAppTheme } from '@/hooks/use-app-theme';
+import { ThemedView } from '@/components/themed-view';
+import { Header } from '@/components/header';
 
 export default function SettingsScreen() {
   const { user, isAuthenticated, loading: authLoading, refreshUser } = useAuth();
+  const { themeMode, setThemeMode } = useTheme();
+  const theme = useAppTheme();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [openingBalance, setOpeningBalance] = useState<string>('');
@@ -47,95 +53,168 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleThemeChange = async (mode: ThemeMode) => {
+    await setThemeMode(mode);
+  };
+
+  const dynamicStyles = getStyles(theme);
+
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
+    <ThemedView style={dynamicStyles.container}>
+      <Header title="Spendly" subtitle="Settings" />
+      <ScrollView style={dynamicStyles.scrollView}>
+
+        <View style={dynamicStyles.section}>
+          <Text style={dynamicStyles.sectionTitle}>Appearance</Text>
+          <Text style={dynamicStyles.sectionDescription}>
+            Choose your preferred theme mode
+          </Text>
+
+          <View style={dynamicStyles.themeSelector}>
+            <TouchableOpacity
+              style={[
+                dynamicStyles.themeOption,
+                themeMode === 'light' && dynamicStyles.themeOptionActive,
+              ]}
+              onPress={() => handleThemeChange('light')}
+            >
+              <Text style={[
+                dynamicStyles.themeOptionText,
+                themeMode === 'light' && dynamicStyles.themeOptionTextActive,
+              ]}>
+                Light Mode
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                dynamicStyles.themeOption,
+                themeMode === 'dark' && dynamicStyles.themeOptionActive,
+              ]}
+              onPress={() => handleThemeChange('dark')}
+            >
+              <Text style={[
+                dynamicStyles.themeOptionText,
+                themeMode === 'dark' && dynamicStyles.themeOptionTextActive,
+              ]}>
+                Dark Mode
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                dynamicStyles.themeOption,
+                themeMode === 'system' && dynamicStyles.themeOptionActive,
+              ]}
+              onPress={() => handleThemeChange('system')}
+            >
+              <Text style={[
+                dynamicStyles.themeOptionText,
+                themeMode === 'system' && dynamicStyles.themeOptionTextActive,
+              ]}>
+                System Default
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Opening Balance</Text>
-          <Text style={styles.sectionDescription}>
+        <View style={dynamicStyles.section}>
+          <Text style={dynamicStyles.sectionTitle}>Opening Balance</Text>
+          <Text style={dynamicStyles.sectionDescription}>
             Set your starting balance. This will be used to calculate your current balance.
             Balance = Opening Balance + Total Income - Total Expenses
           </Text>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Opening Balance Amount *</Text>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Opening Balance Amount *</Text>
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               placeholder="0.00"
+              placeholderTextColor={theme.colors.textTertiary}
               value={openingBalance}
               onChangeText={setOpeningBalance}
               keyboardType="decimal-pad"
             />
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Opening Balance Date</Text>
+          <View style={dynamicStyles.inputGroup}>
+            <Text style={dynamicStyles.label}>Opening Balance Date</Text>
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               value={openingBalanceDate}
               onChangeText={setOpeningBalanceDate}
               placeholder="YYYY-MM-DD"
+              placeholderTextColor={theme.colors.textTertiary}
             />
-            <Text style={styles.helperText}>
+            <Text style={dynamicStyles.helperText}>
               The date from which this opening balance applies
             </Text>
           </View>
 
           <TouchableOpacity
-            style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+            style={[dynamicStyles.saveButton, saving && dynamicStyles.saveButtonDisabled]}
             onPress={handleSave}
             disabled={saving}
           >
-            <Text style={styles.saveButtonText}>
+            <Text style={dynamicStyles.saveButtonText}>
               {saving ? 'Saving...' : 'Save Opening Balance'}
             </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </ThemedView>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   scrollView: {
     flex: 1,
   },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
   section: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     marginTop: 12,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: theme.colors.text,
     marginBottom: 8,
   },
   sectionDescription: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.textSecondary,
     marginBottom: 24,
     lineHeight: 20,
+  },
+  themeSelector: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  themeOption: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.secondaryBackground,
+    alignItems: 'center',
+  },
+  themeOptionActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  themeOptionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+  themeOptionTextActive: {
+    color: '#fff',
   },
   inputGroup: {
     marginBottom: 24,
@@ -143,24 +222,25 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: theme.colors.text,
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.inputBorder,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
   },
   helperText: {
     fontSize: 12,
-    color: '#999',
+    color: theme.colors.textTertiary,
     marginTop: 4,
   },
   saveButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: theme.colors.primary,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',

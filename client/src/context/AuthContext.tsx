@@ -76,8 +76,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = async () => {
-    await apiService.logout();
-    setUser(null);
+    try {
+      await apiService.logout();
+    } catch (error) {
+      // Even if logout fails, clear local state
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear user state and local storage
+      setUser(null);
+      // Ensure storage is cleared even if apiService.logout() had issues
+      try {
+        await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
+      } catch (storageError) {
+        console.error('Error clearing storage:', storageError);
+      }
+    }
   };
 
   const refreshUser = async () => {

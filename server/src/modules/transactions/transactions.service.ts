@@ -84,7 +84,7 @@ export class TransactionsService {
   async findOne(id: string, userId: number) {
     const transaction = await this.transactionsRepository.findOne({
       where: { id, userId, isDeleted: false },
-      relations: ['category'],
+      relations: ['category', 'account'],
     });
 
     if (!transaction) {

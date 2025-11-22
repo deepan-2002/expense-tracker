@@ -1,10 +1,10 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { Stack, useSegments, useRouter, Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ThemeProvider, useTheme } from '@/src/context/ThemeContext';
 import { AuthProvider, useAuth } from '@/src/context/AuthContext';
 
 export const unstable_settings = {
@@ -12,7 +12,7 @@ export const unstable_settings = {
 };
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const { actualTheme } = useTheme();
   const { isAuthenticated, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
@@ -48,27 +48,41 @@ function RootLayoutNav() {
     return null; // Or a loading screen
   }
 
+  // Create themed navigation themes
+  const navigationTheme = actualTheme === 'dark' ? DarkTheme : DefaultTheme;
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+    <NavigationThemeProvider value={navigationTheme}>
+      <Stack
+        screenOptions={{
+          contentStyle: {
+            backgroundColor: actualTheme === 'dark' ? '#0d0d0d' : '#ffffff',
+          },
+        }}
+      >
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="add-expense" options={{ presentation: 'modal', title: 'Add Expense' }} />
+        <Stack.Screen name="add-transaction" options={{ presentation: 'modal', title: 'Add Transaction' }} />
         <Stack.Screen name="expense-detail" options={{ title: 'Expense Details' }} />
         <Stack.Screen name="categories" options={{ title: 'Categories' }} />
+        <Stack.Screen name="accounts" options={{ title: 'Accounts' }} />
+        <Stack.Screen name="settings" options={{ title: 'Settings' }} />
         <Stack.Screen name="statistics" options={{ title: 'Statistics' }} />
         <Stack.Screen name="profile" options={{ title: 'Profile' }} />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+      <StatusBar style={actualTheme === 'dark' ? 'light' : 'dark'} />
+    </NavigationThemeProvider>
   );
 }
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

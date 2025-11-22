@@ -152,13 +152,16 @@ class ApiService {
 
   async logout(): Promise<void> {
     const refreshToken = await AsyncStorage.getItem('refreshToken');
+    // Always try to call the server, but don't fail if it errors
     if (refreshToken) {
       try {
         await this.api.post('/auth/logout', { refreshToken });
       } catch (error) {
-        // Ignore errors on logout
+        // Ignore errors on logout - we'll clear local storage anyway
+        console.log('Logout API call failed, clearing local storage anyway');
       }
     }
+    // Always clear local storage, even if server call failed
     await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
   }
 

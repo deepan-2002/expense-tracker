@@ -14,6 +14,8 @@ import { Link, useRouter, Redirect } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
 import { RegisterDto } from '@/src/types';
 import { useAppTheme } from '@/hooks/use-app-theme';
+import { ThemedView } from '@/components/themed-view';
+import { Header } from '@/components/header';
 
 export default function RegisterScreen() {
   const [formData, setFormData] = useState<RegisterDto>({
@@ -25,6 +27,8 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const { register, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
+  const theme = useAppTheme();
+  const dynamicStyles = getStyles(theme);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -69,26 +73,28 @@ export default function RegisterScreen() {
   };
 
   return (
+    <ThemedView style={dynamicStyles.container}>
+      <Header title="Spendly" subtitle="Sign up to get started" />
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={{ flex: 1 }}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
+      <ScrollView contentContainerStyle={dynamicStyles.scrollContent}>
+        <View style={dynamicStyles.content}>
 
-          <View style={styles.form}>
+          <View style={dynamicStyles.form}>
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               placeholder="Full Name"
+              placeholderTextColor={theme.colors.textTertiary}
               value={formData.name}
               onChangeText={(text) => setFormData({ ...formData, name: text })}
             />
 
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               placeholder="Email"
+              placeholderTextColor={theme.colors.textTertiary}
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
               keyboardType="email-address"
@@ -97,8 +103,9 @@ export default function RegisterScreen() {
             />
 
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               placeholder="Password"
+              placeholderTextColor={theme.colors.textTertiary}
               value={formData.password}
               onChangeText={(text) => setFormData({ ...formData, password: text })}
               secureTextEntry
@@ -106,8 +113,9 @@ export default function RegisterScreen() {
             />
 
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               placeholder="Confirm Password"
+              placeholderTextColor={theme.colors.textTertiary}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
@@ -115,18 +123,18 @@ export default function RegisterScreen() {
             />
 
             <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
+              style={[dynamicStyles.button, loading && dynamicStyles.buttonDisabled]}
               onPress={handleRegister}
               disabled={loading}
             >
-              <Text style={styles.buttonText}>{loading ? 'Creating...' : 'Sign Up'}</Text>
+              <Text style={dynamicStyles.buttonText}>{loading ? 'Creating...' : 'Sign Up'}</Text>
             </TouchableOpacity>
 
-            <View style={styles.linkContainer}>
-              <Text style={styles.linkText}>Already have an account? </Text>
+            <View style={dynamicStyles.linkContainer}>
+              <Text style={dynamicStyles.linkText}>Already have an account? </Text>
               <Link href="/(auth)/login" asChild>
                 <TouchableOpacity>
-                  <Text style={styles.link}>Sign In</Text>
+                  <Text style={dynamicStyles.link}>Sign In</Text>
                 </TouchableOpacity>
               </Link>
             </View>
@@ -134,13 +142,13 @@ export default function RegisterScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </ThemedView>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollContent: {
     flexGrow: 1,
@@ -148,33 +156,22 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#1a1a1a',
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 32,
-    color: '#666',
+    paddingTop: 40,
   },
   form: {
     gap: 16,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.inputBorder,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
   },
   button: {
-    backgroundColor: '#6366f1',
+    backgroundColor: theme.colors.primary,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -194,10 +191,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   linkText: {
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
   link: {
-    color: '#6366f1',
+    color: theme.colors.primary,
     fontWeight: '600',
   },
 });

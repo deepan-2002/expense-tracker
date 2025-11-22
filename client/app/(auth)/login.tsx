@@ -14,6 +14,8 @@ import { Link, useRouter, Redirect } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
 import { LoginDto } from '@/src/types';
 import { useAppTheme } from '@/hooks/use-app-theme';
+import { ThemedView } from '@/components/themed-view';
+import { Header } from '@/components/header';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -55,14 +57,14 @@ export default function LoginScreen() {
   };
 
   return (
+    <ThemedView style={dynamicStyles.container}>
+      <Header subtitle="Sign in to continue" />
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={[dynamicStyles.container, { backgroundColor: theme.colors.background }]}
+      style={{ flex: 1 }}
     >
       <ScrollView contentContainerStyle={dynamicStyles.scrollContent}>
         <View style={dynamicStyles.content}>
-          <Text style={dynamicStyles.title}>Expense Tracker</Text>
-          <Text style={dynamicStyles.subtitle}>Sign in to continue</Text>
 
           <View style={dynamicStyles.form}>
             <TextInput
@@ -106,6 +108,7 @@ export default function LoginScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </ThemedView>
   );
 }
 
@@ -119,19 +122,7 @@ const getStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   },
   content: {
     padding: 20,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: theme.colors.text,
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 32,
-    color: theme.colors.textSecondary,
+    paddingTop: 40,
   },
   form: {
     gap: 16,

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "client",
-    "slug": "client",
+    "name": "Spendly",
+    "slug": "spendly",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "client",
+    "scheme": "spendly",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

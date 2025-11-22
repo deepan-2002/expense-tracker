@@ -10,10 +10,14 @@ import {
 import { useRouter, Redirect } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
 import { ThemedView } from '@/components/themed-view';
+import { useAppTheme } from '@/hooks/use-app-theme';
+import { Header } from '@/components/header';
 
 export default function ProfileScreen() {
   const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
+  const theme = useAppTheme();
+  const dynamicStyles = getStyles(theme);
 
   if (!authLoading && !isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
@@ -26,8 +30,16 @@ export default function ProfileScreen() {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          await logout();
-          router.replace('/(auth)/login');
+          try {
+            await logout();
+            // Navigate to login after successful logout
+            router.replace('/(auth)/login');
+          } catch (error) {
+            // Even if logout fails, navigate to login
+            // The logout function already clears local storage
+            console.error('Logout error:', error);
+            router.replace('/(auth)/login');
+          }
         },
       },
     ]);
@@ -37,55 +49,56 @@ export default function ProfileScreen() {
   const userEmail = user?.email || '';
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
+    <ThemedView style={dynamicStyles.container}>
+      <Header title="Spendly" subtitle="Profile" />
+      <ScrollView style={dynamicStyles.scrollView}>
+        <View style={dynamicStyles.header}>
+          <View style={dynamicStyles.avatar}>
+            <Text style={dynamicStyles.avatarText}>
               {userName.charAt(0).toUpperCase()}
             </Text>
           </View>
-          <Text style={styles.userName}>{userName}</Text>
-          <Text style={styles.userEmail}>{userEmail}</Text>
+          <Text style={dynamicStyles.userName}>{userName}</Text>
+          <Text style={dynamicStyles.userEmail}>{userEmail}</Text>
         </View>
 
-        <View style={styles.section}>
+        <View style={dynamicStyles.section}>
           <TouchableOpacity
-            style={styles.menuItem}
+            style={dynamicStyles.menuItem}
             onPress={() => router.push('/categories')}
           >
-            <Text style={styles.menuItemText}>Categories</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
+            <Text style={dynamicStyles.menuItemText}>Categories</Text>
+            <Text style={dynamicStyles.menuItemArrow}>›</Text>
           </TouchableOpacity>
         </View>
 
-            <View style={styles.section}>
+            <View style={dynamicStyles.section}>
               <TouchableOpacity
-                style={styles.menuItem}
+                style={dynamicStyles.menuItem}
                 onPress={() => router.push('/accounts')}
               >
-                <Text style={styles.menuItemText}>Accounts</Text>
-                <Text style={styles.menuItemArrow}>›</Text>
+                <Text style={dynamicStyles.menuItemText}>Accounts</Text>
+                <Text style={dynamicStyles.menuItemArrow}>›</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.menuItem}
+                style={dynamicStyles.menuItem}
                 onPress={() => router.push('/settings')}
               >
-                <Text style={styles.menuItemText}>Settings</Text>
-                <Text style={styles.menuItemArrow}>›</Text>
+                <Text style={dynamicStyles.menuItemText}>Settings</Text>
+                <Text style={dynamicStyles.menuItemArrow}>›</Text>
               </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemText}>About</Text>
-            <Text style={styles.menuItemArrow}>›</Text>
+          <TouchableOpacity style={dynamicStyles.menuItem}>
+            <Text style={dynamicStyles.menuItemText}>About</Text>
+            <Text style={dynamicStyles.menuItemArrow}>›</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.section}>
+        <View style={dynamicStyles.section}>
           <TouchableOpacity
-            style={[styles.menuItem, styles.logoutButton]}
+            style={[dynamicStyles.menuItem, dynamicStyles.logoutButton]}
             onPress={handleLogout}
           >
-            <Text style={[styles.menuItemText, styles.logoutText]}>Logout</Text>
+            <Text style={[dynamicStyles.menuItemText, dynamicStyles.logoutText]}>Logout</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -93,7 +106,7 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -103,13 +116,13 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     padding: 32,
-    paddingTop: 60,
+    paddingTop: 20,
   },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#6366f1',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -122,19 +135,21 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: theme.colors.text,
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
   section: {
     marginHorizontal: 20,
     marginBottom: 24,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.cardBackground,
     borderRadius: 12,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   menuItem: {
     flexDirection: 'row',
@@ -142,21 +157,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: theme.colors.border,
   },
   menuItemText: {
     fontSize: 16,
-    color: '#1a1a1a',
+    color: theme.colors.text,
   },
   menuItemArrow: {
     fontSize: 20,
-    color: '#999',
+    color: theme.colors.textTertiary,
   },
   logoutButton: {
     borderBottomWidth: 0,
   },
   logoutText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontWeight: '600',
   },
 });

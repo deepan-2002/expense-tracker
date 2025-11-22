@@ -19,6 +19,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { ThemedView } from '@/components/themed-view';
 import { useAppTheme } from '@/hooks/use-app-theme';
+import { Header } from '@/components/header';
 
 export default function AccountsScreen() {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -158,7 +159,6 @@ export default function AccountsScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <View style={dynamicStyles.header}>
-          <Text style={dynamicStyles.title}>Accounts</Text>
           <TouchableOpacity
             style={dynamicStyles.addButton}
             onPress={() => setShowModal(true)}
